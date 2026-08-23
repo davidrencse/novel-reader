@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Re:Zero Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="aurora"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">Re:</span><span class="brand-name">Zero&nbsp;Reader</span>
+      <span class="brand-sub">web novel · voiced by the cast</span>
+    </div>
+    <div class="loader">
+      <div class="seg-toggle">
+        <button id="tab-url" class="seg active">From site</button>
+        <button id="tab-text" class="seg">Paste text</button>
+      </div>
+      <div id="pane-url" class="input-pane">
+        <input id="url" type="url" placeholder="Paste a witchculttranslation.com chapter URL…" spellcheck="false" />
+      </div>
+      <div id="pane-text" class="input-pane hidden">
+        <textarea id="text" placeholder="Line 1 = title, then paste chapter paragraphs…"></textarea>
+      </div>
+      <button id="load" class="btn-primary">Load</button>
+      <div class="seg-toggle" id="engine-toggle" title="Who-is-speaking detection (Groq &amp; Local are free)">
+        <button id="eng-rules" class="seg active">Rules</button>
+        <button id="eng-groq" class="seg">Groq · free</button>
+        <button id="eng-local" class="seg">Local</button>
+      </div>
+      <button id="open-voices" class="btn-ghost" title="Manage character voices">🎙 Voices</button>
+    </div>
+  </header>
+
+  <div class="modal-overlay hidden" id="local-modal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <h2>Free local voices</h2>
+        <button id="close-local" class="modal-close" title="Close">✕</button>
+      </div>
+      <div id="local-body">
+        <p class="modal-note">Runs the speaker AI on your own GPU — free, private, no key.
+          You have <b>LM Studio</b> installed; you just need a chat model loaded.</p>
+        <ol class="steps">
+          <li>Open <b>LM Studio</b> → search &amp; download a small chat model
+              (e.g. <b>Llama 3.2 3B Instruct</b>).</li>
+          <li>Go to the <b>Developer</b> tab → <b>Start Server</b> (port 1234), and load the model.</li>
+          <li>Come back and click <b>Check again</b>.</li>
+        </ol>
+        <div class="key-actions">
+          <span id="local-state" class="local-state">Not detected yet</span>
+          <button id="recheck-local" class="btn-primary">Check again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="key-modal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <h2>Turn on free AI voices</h2>
+        <button id="close-key" class="modal-close" title="Close">✕</button>
+      </div>
+      <p class="modal-note">Groq's free API reads each chapter and gives every character
+        their own voice. It's free — create a key, paste it below (stored only on this
+        computer). No charge, generous limits.</p>
+      <input id="key-input" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off" />
+      <div class="key-actions">
+        <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="key-link">Get a free key ↗</a>
+        <button id="save-key" class="btn-primary">Save &amp; enable</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="voices-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Character voices</h2>
+        <button id="close-voices" class="modal-close" title="Close">✕</button>
+      </div>
+      <p class="modal-note">Upload a clean 6–20s clip (any audio/video) to clone a character's voice.
+        No clip = a distinct built-in voice. Clips are personal — for media you own.</p>
+      <div id="voices-grid" class="voices-grid"></div>
+    </div>
+  </div>
+
+  <main id="main">
+    <section class="reader" id="reader">
+      <div class="empty" id="empty">
+        <div class="empty-mark">Re:</div>
+        <h2>Load a chapter to begin</h2>
+        <p>Paste a chapter URL above, or switch to <b>Paste text</b>. The reader detects who
+           is speaking each line and gives every character their own voice.</p>
+      </div>
+      <article id="chapter" class="chapter hidden">
+        <div class="chips" id="chips"></div>
+        <h1 id="chapter-title"></h1>
+        <div id="body" class="body"></div>
+      </article>
+    </section>
+
+    <aside class="sidebar hidden" id="sidebar">
+      <div class="card" id="card-analysis">
+        <h3>Analysis</h3>
+        <div class="stat-grid" id="stat-grid"></div>
+        <div class="bar" id="dialogue-bar" title="dialogue vs narration">
+          <span class="bar-fill"></span>
+        </div>
+        <div class="bar-legend"><span>Dialogue</span><span>Narration</span></div>
+      </div>
+
+      <div class="card" id="card-cast">
+        <h3>Cast in this chapter <span class="count" id="cast-count"></span></h3>
+        <div id="cast-list" class="cast-list"></div>
+      </div>
+
+      <div class="card hidden" id="card-images">
+        <h3>Illustrations</h3>
+        <div id="gallery" class="gallery"></div>
+      </div>
+
+      <div class="card hidden" id="card-nav">
+        <h3>Chapters</h3>
+        <div id="nav-links" class="nav-links"></div>
+      </div>
+
+      <div class="card hidden" id="card-links">
+        <h3>Links &amp; references <span class="count" id="links-count"></span></h3>
+        <div id="links-list" class="links-list"></div>
+      </div>
+
+      <div class="card hidden" id="card-comments">
+        <h3>Reader comments <span class="count" id="comments-count"></span></h3>
+        <div id="comments-list" class="comments-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="playbar hidden" id="playbar">
+    <button id="play" class="play-btn" title="Read aloud">
+      <svg viewBox="0 0 24 24" class="ic-play"><path d="M8 5v14l11-7z"/></svg>
+      <svg viewBox="0 0 24 24" class="ic-pause hidden"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+    </button>
+    <button id="stop" class="mini-btn" title="Stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+    <div class="now">
+      <div class="now-speaker" id="now-speaker">Ready</div>
+      <div class="now-line" id="now-line">Press play to start reading</div>
+    </div>
+    <div class="progress"><span id="progress-fill"></span></div>
+    <div class="prog-count" id="prog-count">0 / 0</div>
+    <div class="buffer" id="buffer" title="voice model + pre-generation status"></div>
+    <label class="speed">Speed
+      <select id="speed">
+        <option value="0.85">0.85×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.15">1.15×</option>
+        <option value="1.3">1.3×</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

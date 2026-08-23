@@ -1,0 +1,9 @@
+.venv/
+data/cache/
+data/audio/
+data/chapters/
+voices/*.wav
+__pycache__/
+*.pyc
+apikey.txt
+app.log

@@ -1,0 +1,17 @@
+# Installed by setup.ps1 into a Python 3.11 venv.
+# torch/torchaudio are installed SEPARATELY (CUDA wheels) in setup.ps1 —
+# do not add them here or pip may pull a CPU-only build.
+coqui-tts>=0.24.0
+# Pin transformers to the 4.x line: coqui-tts needs >=4.57, but transformers 5.x
+# removed `isin_mps_friendly`, which XTTS still imports. <5 keeps both happy.
+transformers>=4.57,<5
+beautifulsoup4>=4.12
+soundfile>=0.12
+numpy>=1.24
+PyYAML>=6.0
+tqdm>=4.66
+flask>=3.0
+# Native desktop window (uses the Windows WebView2 runtime, preinstalled on Win11).
+pywebview>=5.0
+# Optional AI speaker attribution (only used when attribution.engine = "ai").
+anthropic>=1.0

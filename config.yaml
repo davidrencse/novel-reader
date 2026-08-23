@@ -1,0 +1,83 @@
+# ============================================================
+#  Re:Zero Reader — configuration
+# ============================================================
+# Each character gets a voice. Two ways to voice a character:
+#
+#   1. CLONE  — drop a clean 6-20s mono WAV in  voices/<ref>
+#               (e.g. voices/subaru.wav). XTTS clones it.
+#   2. BUILT-IN — if the ref WAV is missing, the character uses
+#               the named XTTS built-in voice below, so every
+#               character still sounds DISTINCT with zero setup.
+#
+# Add/rename characters freely. `aliases` help the speaker
+# detector match names that appear in the prose.
+# ============================================================
+
+# How lines are attributed to speakers.
+#   rules = free, instant heuristics (dialogue tags + alternation).
+#   local = FREE local LLM (LM Studio / Ollama) — runs on your GPU, no key, no cost.
+#   ai    = Claude cloud API (best accuracy, needs ANTHROPIC_API_KEY, small cost).
+attribution:
+  engine: "rules"          # "rules" | "local" | "ai"
+  local:
+    base_url: "http://localhost:1234/v1"  # LM Studio; Ollama = http://localhost:11434/v1
+    model: ""              # blank = auto-pick the loaded chat model
+    cache: true
+    timeout: 180
+  groq:                    # FREE cloud (needs a free GROQ_API_KEY from console.groq.com)
+    base_url: "https://api.groq.com/openai/v1"
+    model: "llama-3.3-70b-versatile"
+    cache: true
+    timeout: 120
+  ai:
+    model: "claude-opus-5" # cheaper options: "claude-sonnet-5", "claude-haiku-4-5"
+    effort: "low"          # low | medium | high — higher = more accurate, more cost
+    cache: true            # cache each chapter's labels so it's only parsed once
+
+engine:
+  model: "tts_models/multilingual/multi-dataset/xtts_v2"
+  language: "en"
+  use_gpu: true            # RTX 4060 -> true. Set false to force CPU (slow).
+  speed: 1.0               # 0.8 slower … 1.3 faster
+  gap_ms: 250              # silence between segments
+  paragraph_gap_ms: 550    # extra silence between paragraphs
+
+paths:
+  voices_dir: "voices"
+  text_dir: "data/chapters"
+  audio_dir: "data/audio"
+  cache_dir: "data/cache"
+
+# Speaker used for all narration (non-dialogue) text.
+narrator: "Narrator"
+
+# When a line's speaker can't be resolved, use this key. It is a DIALOGUE
+# voice distinct from the narrator, so unattributed speech still sounds like
+# someone talking (and shows up in the cast panel to reassign if you want).
+unknown_speaker: "Unknown"
+
+characters:
+  Narrator:   { ref: "narrator.wav", builtin: "Royston Min",       aliases: [] }
+  Unknown:    { ref: "unknown.wav",  builtin: "Dionisio Schuyler", aliases: [] }
+  Subaru:     { ref: "subaru.wav",   builtin: "Viktor Eka",        aliases: ["Natsuki Subaru", "Natsuki"] }
+  Emilia:     { ref: "emilia.wav",   builtin: "Ana Florence",      aliases: ["Emilia-tan"] }
+  Rem:        { ref: "rem.wav",      builtin: "Tammie Ema",        aliases: [] }
+  Ram:        { ref: "ram.wav",      builtin: "Alison Dietlinde",  aliases: [] }
+  Beatrice:   { ref: "beatrice.wav", builtin: "Daisy Studious",    aliases: ["Betty", "Beako"] }
+  Roswaal:    { ref: "roswaal.wav",  builtin: "Damien Black",      aliases: ["Roswaal L Mathers", "Roswaal L. Mathers"] }
+  Puck:       { ref: "puck.wav",     builtin: "Andrew Chipper",    aliases: [] }
+  Otto:       { ref: "otto.wav",     builtin: "Baldur Sanjin",     aliases: ["Otto Suwen"] }
+  Garfiel:    { ref: "garfiel.wav",  builtin: "Craig Gutsy",       aliases: ["Garf"] }
+  Echidna:    { ref: "echidna.wav",  builtin: "Brenda Stern",      aliases: [] }
+  Petra:      { ref: "petra.wav",    builtin: "Gracie Wise",       aliases: ["Petra Leyte"] }
+  Frederica:  { ref: "frederica.wav",builtin: "Gitta Nikolina",    aliases: ["Frederica Baumann"] }
+  Felix:      { ref: "felix.wav",    builtin: "Sofia Hellen",      aliases: ["Ferris", "Felix Argyle"] }
+  Crusch:     { ref: "crusch.wav",   builtin: "Brenda Stern",      aliases: ["Crusch Karsten"] }
+  Wilhelm:    { ref: "wilhelm.wav",  builtin: "Dionisio Schuyler", aliases: ["Wilhelm van Astrea"] }
+  Anastasia:  { ref: "anastasia.wav",builtin: "Henriette Usha",    aliases: ["Anastasia Hoshin"] }
+  Julius:     { ref: "julius.wav",   builtin: "Ludvig Milivoj",    aliases: ["Julius Juukulius"] }
+  Reinhard:   { ref: "reinhard.wav", builtin: "Torcull Diarmuid",  aliases: ["Reinhard van Astrea"] }
+  Priscilla:  { ref: "priscilla.wav",builtin: "Tanja Adelina",     aliases: ["Priscilla Barielle"] }
+  Felt:       { ref: "felt.wav",     builtin: "Tammy Grit",        aliases: [] }
+  Elsa:       { ref: "elsa.wav",     builtin: "Asya Anara",        aliases: ["Elsa Granhiert"] }
+  Satella:    { ref: "satella.wav",  builtin: "Nova Hogarth",      aliases: [] }
